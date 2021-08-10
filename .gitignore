@@ -1,0 +1,36 @@
+# IntelliJ
+.idea/
+*.iml
+*.iws
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# VS Code
+*.code-workspace
+
+# Maven
+log/
+target/
+
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# Maven, Gradle
+*.mvn/
+*.gradle/
+
+# Package Files
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# etc.
