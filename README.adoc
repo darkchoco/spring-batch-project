@@ -45,3 +45,10 @@ image::./img/00-01.jpg[]
 
 image::./img/00-02.jpg[]
 
+== 2. Building Batch Jobs
+=== Job parameters
+parameter가 2개 이상 있을 경우 아래와 같이 quote를 사용한다.
+[source, bash]
+----
+Z:\lab_ext\java-spring\spring-batch\spring-batch-project\sbp-02-01\target>java -jar .\sbp-02-01-0.0.1-SNAPSHOT.jar "item=shoes" "run.date(date)=2021/08/11"
+----

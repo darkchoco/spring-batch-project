@@ -32,7 +32,10 @@ public class Application {
         return this.stepBuilderFactory.get("packageItemStep").tasklet(new Tasklet() {
             @Override
             public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
-                System.out.println("The item has been packaged.");
+                String item = chunkContext.getStepContext().getJobParameters().get("item").toString();
+                String date = chunkContext.getStepContext().getJobParameters().get("run.date").toString();
+
+                System.out.println(String.format("The %s has been packaged on %s.", item, date));
                 return RepeatStatus.FINISHED;
             }
         }).build();
