@@ -25,6 +25,26 @@ public class Application {
     public StepBuilderFactory stepBuilderFactory;
 
     @Bean
+    public Step givePackageToCustomerStep() {
+        return this.stepBuilderFactory.get("givePackageToCustomer")
+                .tasklet( (contribution, chunkContext) -> {
+                    System.out.println("Given the package to the customer.");
+                    return RepeatStatus.FINISHED;
+                })
+                .build();
+    }
+
+    @Bean
+    public Step driveToAddressStep() {
+        return this.stepBuilderFactory.get("driveToAddressStep")
+                .tasklet( (contribution, chunkContext) -> {
+                    System.out.println("Successfully arrived at the address.");
+                    return RepeatStatus.FINISHED;
+                })
+                .build();
+    }
+
+    @Bean
     public Step packageItemStep() {
         // Tasklet is a particular type of step. It has one method on its interface, execute.
         // And that method will get called over and over again until the tasklet signals that it has been completed.
@@ -35,7 +55,7 @@ public class Application {
                 String item = chunkContext.getStepContext().getJobParameters().get("item").toString();
                 String date = chunkContext.getStepContext().getJobParameters().get("run.date").toString();
 
-                System.out.println(String.format("The %s has been packaged on %s.", item, date));
+                System.out.printf("The %s has been packaged on %s.%n", item, date);
                 return RepeatStatus.FINISHED;
             }
         }).build();
@@ -43,7 +63,11 @@ public class Application {
 
     @Bean
     public Job deliverPackageJob() {
-        return this.jobBuilderFactory.get("deliverPackageJob").start(packageItemStep()).build();
+        return this.jobBuilderFactory.get("deliverPackageJob")
+                .start(packageItemStep())
+                .next(driveToAddressStep())
+                .next(givePackageToCustomerStep())
+                .build();
     }
 
     public static void main(String[] args) {
