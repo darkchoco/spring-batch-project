@@ -26,8 +26,33 @@ public class Application {
     public StepBuilderFactory stepBuilderFactory;
 
     @Bean
+    public JobExecutionDecider itemCorrectnessdecider() {
+        return new ItemCorrectnessDecider();
+    }
+
+    @Bean
     public JobExecutionDecider decider() {
         return new DeliveryDecider();
+    }
+
+    @Bean
+    public Step thanksCustomerStep() {
+        return this.stepBuilderFactory.get("thanksCustomerStep")
+                .tasklet( (contribution, chunkContext) -> {
+                    System.out.println("Thank you for using our service.");
+                    return RepeatStatus.FINISHED;
+                })
+                .build();
+    }
+
+    @Bean
+    public Step refundItemStep() {
+        return this.stepBuilderFactory.get("refundItemStep")
+                .tasklet( (contribution, chunkContext) -> {
+                    System.out.println("Customer claims for refund.");
+                    return RepeatStatus.FINISHED;
+                })
+                .build();
     }
 
     @Bean
@@ -100,6 +125,11 @@ public class Application {
                 .from(driveToAddressStep())
                     .on("*").to(decider())
                         .on("PRESENT").to(givePackageToCustomerStep())
+//                            .on("*").to(itemCorrectnessdecider())
+                            .next(itemCorrectnessdecider())
+                                .on("CORRECT").to(thanksCustomerStep())
+                            .from(itemCorrectnessdecider())
+                                .on("INCORRECT").to(refundItemStep())
                     .from(decider())
                         .on("NOT PRESENT").to(leaveAtDoorStep())
                 .end()

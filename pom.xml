@@ -16,5 +16,6 @@
     <modules>
         <module>sbp-01-05</module>
         <module>sbp-02-01</module>
+        <module>sbp-02-ex</module>
     </modules>
 </project>
