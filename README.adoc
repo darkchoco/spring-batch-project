@@ -52,3 +52,12 @@ parameter가 2개 이상 있을 경우 아래와 같이 quote를 사용한다.
 ----
 Z:\lab_ext\java-spring\spring-batch\spring-batch-project\sbp-02-01\target>java -jar .\sbp-02-01-0.0.1-SNAPSHOT.jar "item=shoes" "run.date(date)=2021/08/11"
 ----
+
+---
+
+테스트 환경에서 다시 Job을 실행할 경우 Metadata 테이블을 모두 삭제하는 것이 편하다. +
+
+다양한 삭제방법이 있지만 'Spring Batch' 프로젝트에서 제공하는 삭제 스크립트를 이용하도록 하자. +
+https://github.com/spring-projects/spring-batch/tree/main/spring-batch-core/src/main/resources/org/springframework/batch/core[spring-batch/spring-batch-core/src/main/resources/org/springframework/batch/core/]에서 다운로드 받아도 되고 ``~/.m`` 레포지토리 내에 있는 jar(~\.m2\repository\org\springframework\batch\spring-batch-core\4.3.3\spring-batch-core-4.3.3.jar)를 푼 다음 해당 스크립트를 사용해도 된다.
+
+본 프로젝트에서는 ``script``라는 폴더를 만들어 주요한 DB의 생성/삭제 스크립트를 카피 해놓았다.
