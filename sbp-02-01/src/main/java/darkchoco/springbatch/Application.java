@@ -25,8 +25,18 @@ public class Application {
     public StepBuilderFactory stepBuilderFactory;
 
     @Bean
+    public Step storePackageStep() {
+        return this.stepBuilderFactory.get("storePackageStep")
+                .tasklet( (contribution, chunkContext) -> {
+                    System.out.println("Storing the package while the customer address is located.");
+                    return RepeatStatus.FINISHED;
+                })
+                .build();
+    }
+
+    @Bean
     public Step givePackageToCustomerStep() {
-        return this.stepBuilderFactory.get("givePackageToCustomer")
+        return this.stepBuilderFactory.get("givePackageToCustomerStep")
                 .tasklet( (contribution, chunkContext) -> {
                     System.out.println("Given the package to the customer.");
                     return RepeatStatus.FINISHED;
@@ -36,8 +46,12 @@ public class Application {
 
     @Bean
     public Step driveToAddressStep() {
+        boolean GOT_LOST = false;
+
         return this.stepBuilderFactory.get("driveToAddressStep")
                 .tasklet( (contribution, chunkContext) -> {
+                    if (GOT_LOST)
+                        throw new RuntimeException("Got lost driving to the address");
                     System.out.println("Successfully arrived at the address.");
                     return RepeatStatus.FINISHED;
                 })
@@ -66,7 +80,10 @@ public class Application {
         return this.jobBuilderFactory.get("deliverPackageJob")
                 .start(packageItemStep())
                 .next(driveToAddressStep())
-                .next(givePackageToCustomerStep())
+                    .on("FAILED").to(storePackageStep())
+                .from(driveToAddressStep())
+                    .on("*").to(givePackageToCustomerStep())
+                .end()
                 .build();
     }
 
