@@ -39,6 +39,24 @@ public class Application {
         return new DeliveryDecider();
     }
 
+    @Bean
+    public Step nestedBillingJobStep() {
+        return this.stepBuilderFactory.get("nestedBillingJobStep").job(billingJob()).build();
+    }
+
+    @Bean
+    public Step sendInvoiceStep() {
+        return this.stepBuilderFactory.get("invoiceStep").tasklet(((contribution, chunkContext) -> {
+            System.out.println("Invoice is sent to customer.");
+            return RepeatStatus.FINISHED;
+        })).build();
+    }
+
+    @Bean
+    public Job billingJob() {
+        return this.jobBuilderFactory.get("billingJob").start(sendInvoiceStep()).build();
+    }
+
     @Bean  // 새롭게 정의한 external Flow
     public Flow deliveryFlow() {
         return new FlowBuilder<SimpleFlow>("deliveryFlow")
@@ -183,6 +201,7 @@ public class Application {
     public Job deliverPackageJob() {
         return this.jobBuilderFactory.get("deliverPackageJob").start(packageItemStep())
                 .on("*").to(deliveryFlow())
+                .next(nestedBillingJobStep())  // 다른 Job 추가
                 .end()
                 .build();
     }
