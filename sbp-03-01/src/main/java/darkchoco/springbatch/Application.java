@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 
 @SpringBootApplication
 @EnableBatchProcessing
@@ -55,6 +56,11 @@ public class Application {
     @Bean
     public Job billingJob() {
         return this.jobBuilderFactory.get("billingJob").start(sendInvoiceStep()).build();
+    }
+
+    @Bean
+    public Flow billingFlow() {
+        return new FlowBuilder<SimpleFlow>("billingFlow").start(sendInvoiceStep()).build();
     }
 
     @Bean  // 새롭게 정의한 external Flow
@@ -199,9 +205,10 @@ public class Application {
 
     @Bean
     public Job deliverPackageJob() {
-        return this.jobBuilderFactory.get("deliverPackageJob").start(packageItemStep())
-                .on("*").to(deliveryFlow())
-                .next(nestedBillingJobStep())  // 다른 Job 추가
+        return this.jobBuilderFactory.get("deliverPackageJob")
+                .start(packageItemStep())
+                .split(new SimpleAsyncTaskExecutor())
+                .add(deliveryFlow(), billingFlow())
                 .end()
                 .build();
     }
