@@ -5,14 +5,14 @@ import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.job.flow.FlowExecutionStatus;
 import org.springframework.batch.core.job.flow.JobExecutionDecider;
 
-import java.time.LocalDateTime;
+import java.util.Random;
 
-public class DeliveryDecider implements JobExecutionDecider {
-
+public class ItemCorrectnessDecider implements JobExecutionDecider {
     @Override
     public FlowExecutionStatus decide(JobExecution jobExecution, StepExecution stepExecution) {
-        String result = LocalDateTime.now().getHour() < 22 ? "PRESENT" : "NOT PRESENT";  // 오후에는 부재중으로
-        System.out.println("Decider result is: " + result);
+        // https://stackoverflow.com/questions/8183840/probability-in-java
+        String result = new Random().nextInt(100) <= 70 ? "CORRECT" : "INCORRECT";
+        System.out.printf("Item is %s. %n", result);
         return new FlowExecutionStatus(result);
     }
 }
