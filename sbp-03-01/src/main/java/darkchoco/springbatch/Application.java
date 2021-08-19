@@ -31,7 +31,7 @@ public class Application {
     public StepBuilderFactory stepBuilderFactory;
 
     @Bean
-    public JobExecutionDecider itemCorrectnessdecider() {
+    public JobExecutionDecider itemCorrectnessDecider() {
         return new ItemCorrectnessDecider();
     }
 
@@ -70,9 +70,9 @@ public class Application {
                     .on("FAILED").to(storePackageStep())
                 .from(driveToAddressStep())
                     .on("*").to(decider())
-                    .on("PRESENT").to(givePackageToCustomerStep()).next(itemCorrectnessdecider())
+                    .on("PRESENT").to(givePackageToCustomerStep()).next(itemCorrectnessDecider())
                         .on("CORRECT").to(thanksCustomerStep())
-                        .from(itemCorrectnessdecider())
+                        .from(itemCorrectnessDecider())
                         .on("INCORRECT").to(refundItemStep())
                     .from(decider())
                     .on("NOT PRESENT").to(leaveAtDoorStep())
