@@ -20,5 +20,6 @@
         <module>sbp-03-01</module>
         <module>sbp-04-01</module>
         <module>sbp-04-02</module>
+        <module>sbp-04-03</module>
     </modules>
 </project>

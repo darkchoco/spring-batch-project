@@ -6,7 +6,9 @@ import org.springframework.batch.core.configuration.annotation.EnableBatchProces
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.item.ItemReader;
-import org.springframework.batch.item.database.builder.JdbcCursorItemReaderBuilder;
+import org.springframework.batch.item.database.PagingQueryProvider;
+import org.springframework.batch.item.database.builder.JdbcPagingItemReaderBuilder;
+import org.springframework.batch.item.database.support.SqlPagingQueryProviderFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -18,13 +20,6 @@ import javax.sql.DataSource;
 @EnableBatchProcessing
 public class Application {
 
-    private static final String ORDER_SQL = "SELECT order_id, first_name, last_name, "
-            + "email, cost, item_id, item_name, ship_date "
-            + "FROM SHIPPED_ORDER "
-            + "ORDER BY order_id";  // ORDER BY 를 반드시 지정한다.
-                                    // A sort causes the database to return the data in the specified order,
-                                    // so a Job can be restarted from a particular point in the dataset.
-
     @Autowired
     public JobBuilderFactory jobBuilderFactory;
 
@@ -35,17 +30,34 @@ public class Application {
     private DataSource dataSource;
 
     @Bean
-    public ItemReader<Order> itemReader() {
-        return new JdbcCursorItemReaderBuilder<Order>()
+    public PagingQueryProvider queryProvider() throws Exception {
+        SqlPagingQueryProviderFactoryBean factoryBean = new SqlPagingQueryProviderFactoryBean();
+
+        factoryBean.setSelectClause("SELECT order_id, first_name, last_name, email, cost, item_id, item_name, ship_date");
+        factoryBean.setFromClause("FROM SHIPPED_ORDER");
+        factoryBean.setSortKey("order_id");  // A sortKey causes the database to return the data in the specified order,
+                                             // so a Job can be restarted from a particular point in the dataset.
+        factoryBean.setDataSource(dataSource);
+
+        return factoryBean.getObject();  // This factory does throw an exception. So we're going to need to propagate
+                                         // that exception through our call stack, in order to be able to handle it.
+                                         // 즉 이 method signature에 throw Exception 추가하고 --> itemReader() -->
+                                         // chunkBasedStep() --> job() 순으로 Exception을 추가한다.
+    }
+
+    @Bean
+    public ItemReader<Order> itemReader () throws Exception {
+        return new JdbcPagingItemReaderBuilder<Order>()
                 .dataSource(dataSource)
                 .name("jdbcCursorItemReader")
-                .sql(ORDER_SQL)
+                .queryProvider(queryProvider())
                 .rowMapper(new OrderRowMapper())
+                .pageSize(90)  // chunkSize와 똑같게 해야한다.
                 .build();
     }
 
     @Bean
-    public Step chunkBasedStep() {
+    public Step chunkBasedStep() throws Exception {
         return this.stepBuilderFactory.get("chunkBasedStep")
                 .<Order, Order>chunk(90)
                 .reader(itemReader())
@@ -56,7 +68,7 @@ public class Application {
     }
 
     @Bean
-    public Job job() {
+    public Job job() throws Exception {
         return this.jobBuilderFactory.get("job")
                 .start(chunkBasedStep())
                 .build();
