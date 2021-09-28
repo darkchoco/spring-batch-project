@@ -21,7 +21,11 @@ mvn archetype:generate ^
 
 === sbp-XX-XX (Module)
 하위 Module의 ``pom.xml``에서 아래 내용을 주목한다. +
-즉 ``spring-batch-project``를 ``parent``로 하지 않고 ``spring-boot-starter-parent``를 지정했다. (이게 맞을 듯)
+즉 ``spring-batch-project``를 ``parent``로 하지 않고 ``spring-boot-starter-parent``를 지정했다.
+
+* ``spring-batch-project``에서 특별히 상속받을 값이 없다.
+* ``parent``를 2개 지정할 수 없고, ``spring-boot-starter-parent``는 반드시 필요하다.
+
 [source, xml]
 ----
     ...
@@ -61,3 +65,6 @@ Z:\lab_ext\java-spring\spring-batch\spring-batch-project\sbp-02-01\target>java -
 https://github.com/spring-projects/spring-batch/tree/main/spring-batch-core/src/main/resources/org/springframework/batch/core[spring-batch/spring-batch-core/src/main/resources/org/springframework/batch/core/]에서 다운로드 받아도 되고 ``~/.m`` 레포지토리 내에 있는 jar(~\.m2\repository\org\springframework\batch\spring-batch-core\4.3.3\spring-batch-core-4.3.3.jar)를 푼 다음 해당 스크립트를 사용해도 된다.
 
 본 프로젝트에서는 ``script``라는 폴더를 만들어 주요한 DB의 생성/삭제 스크립트를 카피 해놓았다.
+
+== 5. Writing Job Output
+* sbp-05-01: DB에서 읽고 csv 파일에 쓰기
